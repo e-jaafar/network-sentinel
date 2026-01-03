@@ -5,9 +5,11 @@ Wants=network-sentinel-backend.service
 
 [Service]
 Type=simple
-User=Jaafar
-Group=Jaafar
-WorkingDirectory=/home/Jaafar/Desktop/network-sentinel/frontend
+# Change USER to your username
+User=USER
+Group=USER
+# Change PATH to your installation directory
+WorkingDirectory=/home/USER/network-sentinel/frontend
 Environment="PATH=/usr/local/bin:/usr/bin:/bin"
 Environment="NODE_ENV=production"
 ExecStart=/usr/bin/npm run start
