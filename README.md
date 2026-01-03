@@ -4,6 +4,10 @@ AI-powered network security monitoring dashboard for Raspberry Pi.
 
 ![Dashboard Preview](https://img.shields.io/badge/Status-Active-green) ![Platform](https://img.shields.io/badge/Platform-Raspberry%20Pi-red) ![AI](https://img.shields.io/badge/AI-Llama%203.2-blue)
 
+## Screenshot
+
+![Network Sentinel Dashboard](https://i.ibb.co/FbbgLR8f/Capture-d-e-cran-2026-01-03-a-18-18-54.png)
+
 ## Features
 
 - **Network Scanning** - ARP-based device discovery with port scanning
@@ -16,13 +20,134 @@ AI-powered network security monitoring dashboard for Raspberry Pi.
 
 ## Architecture
 
+### System Overview
+
+```mermaid
+flowchart TB
+    subgraph RPI[Raspberry Pi 5]
+        subgraph Frontend[Frontend - Port 3000]
+            NEXT[Next.js 16]
+            REACT[React 19]
+            TW[Tailwind CSS]
+        end
+        
+        subgraph Backend[Backend - Port 8000]
+            FAST[FastAPI]
+            AUTH[JWT Auth]
+            DB[(SQLite)]
+        end
+        
+        subgraph AI[AI Engine - Port 11434]
+            OLLAMA[Ollama]
+            LLAMA[Llama 3.2]
+        end
+        
+        subgraph Scanner[Network Scanner]
+            SCAPY[Scapy]
+            ARP[ARP Discovery]
+            PORT[Port Scanner]
+        end
+    end
+    
+    USER((User)) --> NEXT
+    NEXT <--> FAST
+    FAST <--> DB
+    FAST <--> OLLAMA
+    FAST <--> SCAPY
+    SCAPY --> ARP
+    SCAPY --> PORT
+    FAST --> DISCORD[Discord Webhook]
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Raspberry Pi 5                           │
-├─────────────┬─────────────┬─────────────┬──────────────────┤
-│   Ollama    │   FastAPI   │   Next.js   │    SQLite        │
-│  Llama 3.2  │  Port 8000  │  Port 3000  │   sentinel.db    │
-└─────────────┴─────────────┴─────────────┴──────────────────┘
+
+### Request Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant B as Backend
+    participant S as Scanner
+    participant AI as Ollama
+    participant D as Discord
+
+    U->>F: Login
+    F->>B: POST /api/auth/login
+    B-->>F: JWT Token
+    
+    U->>F: Start Scan
+    F->>B: POST /api/scan/start
+    B->>S: Execute scan (sudo)
+    S-->>B: Device list + ports
+    B->>B: Calculate risk scores
+    B->>AI: Analyze results
+    AI-->>B: Security insights
+    B->>D: Send alerts (if any)
+    B-->>F: Scan complete
+    F-->>U: Display results
+```
+
+### Data Model
+
+```mermaid
+erDiagram
+    SCANS {
+        int id PK
+        string scan_time
+        string network
+        int device_count
+        json devices
+    }
+    
+    DEVICES {
+        string ip PK
+        string mac
+        string hostname
+        string vendor
+        json ports
+        string risk_level
+    }
+    
+    ALERTS {
+        int id PK
+        int scan_id FK
+        string device_ip
+        string alert_type
+        string severity
+        boolean notified
+    }
+    
+    SETTINGS {
+        string key PK
+        string value
+    }
+    
+    SCANS ||--o{ DEVICES : contains
+    SCANS ||--o{ ALERTS : generates
+```
+
+### Component Architecture
+
+```mermaid
+graph LR
+    subgraph Frontend
+        A[page.tsx] --> B[api.ts]
+        A --> C[LoginPage]
+        A --> D[Dashboard]
+    end
+    
+    subgraph Backend
+        E[main.py] --> F[auth.py]
+        E --> G[database.py]
+        E --> H[discord_notify.py]
+        E --> I[pdf_report.py]
+    end
+    
+    subgraph Scanner
+        J[network_scanner.py]
+    end
+    
+    B <-->|HTTP/JWT| E
+    E <-->|subprocess| J
 ```
 
 ## Tech Stack
