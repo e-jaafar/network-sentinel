@@ -1,0 +1,18 @@
+[Unit]
+Description=Network Sentinel Frontend (Next.js)
+After=network.target network-sentinel-backend.service
+Wants=network-sentinel-backend.service
+
+[Service]
+Type=simple
+User=Jaafar
+Group=Jaafar
+WorkingDirectory=/home/Jaafar/Desktop/network-sentinel/frontend
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="NODE_ENV=production"
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
